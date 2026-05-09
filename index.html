@@ -31,6 +31,16 @@
         #backupModal textarea { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        
+        /* WAVE ANIMATION */
+        @keyframes waveIn {
+            from { opacity: 0; transform: scale(0.85) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-wave {
+            opacity: 0;
+            animation: waveIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -247,6 +257,9 @@
             const isGameOver = activeDay > 75;
             const isPerfect = state.completedDays.length === 75;
             
+            // Detect screen width to determine grid columns (Tailwind md breakpoint is 768px)
+            const colCount = window.innerWidth >= 768 ? 10 : 5; 
+            
             let gridHtml = '';
             
             for (let i = 1; i <= 75; i++) {
@@ -255,15 +268,23 @@
                 const isActive = i === activeDay && !isGameOver;
                 const isFuture = i > activeDay;
 
+                // Wave delay calculation (diagonal from top-left)
+                const row = Math.floor((i - 1) / colCount);
+                const col = (i - 1) % colCount;
+                const waveDelay = (row + col) * 0.04; // 0.04s stagger
+
                 // Grab local photo if it exists
                 const localPhotoData = window.photoCache[i];
                 
-                let classes = "grid-box relative overflow-hidden ";
+                let classes = "grid-box relative overflow-hidden animate-wave ";
                 let content = i;
                 let tag = "div";
                 let onClick = "";
                 
-                let styleAttr = localPhotoData ? `style="background-image: url('${localPhotoData}'); background-size: cover; background-position: center;"` : "";
+                let styleAttr = localPhotoData 
+                    ? `style="background-image: url('${localPhotoData}'); background-size: cover; background-position: center; animation-delay: ${waveDelay}s;"` 
+                    : `style="animation-delay: ${waveDelay}s;"`;
+                
                 let overlay = localPhotoData ? `<div class="absolute inset-0 bg-black/40 z-0"></div>` : "";
                 let textClass = localPhotoData ? "z-10 text-white font-bold drop-shadow-md" : "z-10";
 
