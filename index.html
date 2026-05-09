@@ -39,7 +39,8 @@
         }
         .animate-wave {
             opacity: 0;
-            animation: waveIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            /* Smoothed out the animation duration from 0.5s to 0.7s */
+            animation: waveIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -268,10 +269,11 @@
                 const isActive = i === activeDay && !isGameOver;
                 const isFuture = i > activeDay;
 
-                // Wave delay calculation (diagonal from top-left)
+                // Slower wave delay calculation + base start delay
                 const row = Math.floor((i - 1) / colCount);
                 const col = (i - 1) % colCount;
-                const waveDelay = (row + col) * 0.04; // 0.04s stagger
+                // 0.2s base delay so it doesn't fire instantly, and 0.08s stagger for a slower ripple
+                const waveDelay = 0.2 + ((row + col) * 0.08); 
 
                 // Grab local photo if it exists
                 const localPhotoData = window.photoCache[i];
