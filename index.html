@@ -608,19 +608,19 @@
                     new Promise(r => { img2.onload = r; img2.src = photoDay75; })
                 ]);
 
-                // Create a 1080x1440 canvas (Classic Portrait layout, matches UI beautifully)
+                // Create a 1080x1920 canvas (16:9 tall ratio perfectly fits all modern phones/stories)
                 const canvas = document.createElement('canvas');
                 canvas.width = 1080;
-                canvas.height = 1440;
+                canvas.height = 1920;
                 const ctx = canvas.getContext('2d');
 
-                // 1. Draw Background (Match app background - clean white/slate-50)
-                const bgGrad = ctx.createLinearGradient(0, 0, 0, 1440);
+                // 1. Draw Background (Match app background)
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, 1920);
                 bgGrad.addColorStop(0, '#fefce8'); // Subtle yellow tint at very top
-                bgGrad.addColorStop(0.3, '#ffffff');
+                bgGrad.addColorStop(0.2, '#ffffff');
                 bgGrad.addColorStop(1, '#ffffff'); 
                 ctx.fillStyle = bgGrad;
-                ctx.fillRect(0, 0, 1080, 1440);
+                ctx.fillRect(0, 0, 1080, 1920);
 
                 // Calculate Stats
                 const isPerfect = state.completedDays.length === 75;
@@ -636,115 +636,115 @@
                 const totalLiters = (totalWater / 1000).toFixed(1);
                 const completedCount = state.completedDays.length;
 
-                // 2. Draw Title Text (Matches UI exactly)
-                const textGrad = ctx.createLinearGradient(0, 80, 0, 180);
+                // 2. Draw Title Text (Moved down slightly to look centered in taller phones)
+                const textGrad = ctx.createLinearGradient(0, 100, 0, 250);
                 textGrad.addColorStop(0, '#facc15'); // yellow-400
                 textGrad.addColorStop(1, '#ca8a04'); // yellow-600
                 ctx.fillStyle = textGrad;
-                ctx.font = 'italic 900 110px Arial, sans-serif'; 
+                ctx.font = 'italic 900 130px Arial, sans-serif'; 
                 ctx.textAlign = 'center';
-                ctx.fillText(vTitle, 540, 160);
+                ctx.fillText(vTitle, 540, 220);
 
                 ctx.fillStyle = '#1e293b'; // slate-800
-                ctx.font = 'bold 34px Arial, sans-serif';
-                ctx.fillText(vSubtitle, 540, 230);
+                ctx.font = 'bold 40px Arial, sans-serif';
+                ctx.fillText(vSubtitle, 540, 300);
 
-                // 3. Draw Comparison Card (Glass match)
+                // 3. Draw Comparison Card (Glass match, centered vertically)
                 // Card Background
-                fillRoundRect(ctx, 80, 300, 920, 560, 40, '#f8fafc', '#e2e8f0', 4);
+                fillRoundRect(ctx, 80, 380, 920, 620, 40, '#f8fafc', '#e2e8f0', 4);
                 
                 ctx.fillStyle = '#0f172a';
-                ctx.font = '900 38px Arial, sans-serif';
-                ctx.fillText('DAY 1 VS DAY 75', 540, 380);
+                ctx.font = '900 42px Arial, sans-serif';
+                ctx.fillText('DAY 1 VS DAY 75', 540, 470);
 
-                ctx.font = 'bold 24px Arial, sans-serif';
-                ctx.fillStyle = '#64748b'; ctx.fillText('STARTED', 300, 440);
-                ctx.fillStyle = '#2563eb'; ctx.fillText('FINISHED', 780, 440);
+                ctx.font = 'bold 28px Arial, sans-serif';
+                ctx.fillStyle = '#64748b'; ctx.fillText('STARTED', 300, 530);
+                ctx.fillStyle = '#2563eb'; ctx.fillText('FINISHED', 780, 530);
 
                 // Image 1 Frame & Clip
-                fillRoundRect(ctx, 100, 470, 400, 400, 24, '#ffffff', '#cbd5e1', 4);
+                fillRoundRect(ctx, 100, 560, 400, 400, 24, '#ffffff', '#cbd5e1', 4);
                 ctx.save();
-                createRoundRectPath(ctx, 100, 470, 400, 400, 24);
+                createRoundRectPath(ctx, 100, 560, 400, 400, 24);
                 ctx.clip();
-                ctx.drawImage(img1, 100, 470, 400, 400);
+                ctx.drawImage(img1, 100, 560, 400, 400);
                 ctx.restore();
 
                 // Image 2 Frame & Clip
-                fillRoundRect(ctx, 580, 470, 400, 400, 24, '#ffffff', '#3b82f6', 8);
+                fillRoundRect(ctx, 580, 560, 400, 400, 24, '#ffffff', '#3b82f6', 8);
                 ctx.save();
-                createRoundRectPath(ctx, 580, 470, 400, 400, 24);
+                createRoundRectPath(ctx, 580, 560, 400, 400, 24);
                 ctx.clip();
-                ctx.drawImage(img2, 580, 470, 400, 400);
+                ctx.drawImage(img2, 580, 560, 400, 400);
                 ctx.restore();
 
                 // 4. Draw Stats Card (Glass match)
                 ctx.save();
                 // Base border and background
-                fillRoundRect(ctx, 80, 920, 920, 440, 40, '#ffffff', 'rgba(250, 204, 21, 0.5)', 6); 
+                fillRoundRect(ctx, 80, 1080, 920, 520, 40, '#ffffff', 'rgba(250, 204, 21, 0.5)', 6); 
                 
                 // Draw yellow top strip overlay
-                createRoundRectPath(ctx, 80, 920, 920, 440, 40);
+                createRoundRectPath(ctx, 80, 1080, 920, 520, 40);
                 ctx.clip();
-                const topBarGrad = ctx.createLinearGradient(80, 920, 1000, 920);
+                const topBarGrad = ctx.createLinearGradient(80, 1080, 1000, 1080);
                 topBarGrad.addColorStop(0, '#fde047');
                 topBarGrad.addColorStop(0.5, '#eab308');
                 topBarGrad.addColorStop(1, '#fde047');
                 ctx.fillStyle = topBarGrad;
-                ctx.fillRect(80, 920, 920, 16);
+                ctx.fillRect(80, 1080, 920, 20);
                 ctx.restore();
 
                 ctx.fillStyle = '#0f172a';
-                ctx.font = '900 44px Arial, sans-serif';
+                ctx.font = '900 50px Arial, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText((state.name ? state.name + "'s" : "Your") + ' Final Stats', 140, 1020);
+                ctx.fillText((state.name ? state.name + "'s" : "Your") + ' Final Stats', 140, 1200);
 
-                const lineY = [1120, 1220, 1320];
+                const lineY = [1320, 1430, 1540];
 
                 // Water Stat
-                ctx.font = 'bold 30px Arial, sans-serif';
+                ctx.font = 'bold 34px Arial, sans-serif';
                 ctx.fillStyle = '#64748b'; ctx.fillText('WATER DRANK', 140, lineY[0]);
                 ctx.fillStyle = '#2563eb'; ctx.textAlign = 'right'; ctx.fillText(totalLiters + ' Liters', 940, lineY[0]);
-                ctx.fillStyle = '#fef08a'; ctx.fillRect(140, lineY[0]+30, 800, 2); // Yellow divider
+                ctx.fillStyle = '#fef08a'; ctx.fillRect(140, lineY[0]+35, 800, 3); // Yellow divider
 
                 // Meals Stat
                 ctx.textAlign = 'left'; ctx.fillStyle = '#64748b'; ctx.fillText('MEALS TRACKED', 140, lineY[1]);
                 ctx.fillStyle = '#ea580c'; ctx.textAlign = 'right'; ctx.fillText(totalMeals, 940, lineY[1]);
-                ctx.fillStyle = '#fef08a'; ctx.fillRect(140, lineY[1]+30, 800, 2); // Yellow divider
+                ctx.fillStyle = '#fef08a'; ctx.fillRect(140, lineY[1]+35, 800, 3); // Yellow divider
 
                 // Days Stat
                 ctx.textAlign = 'left'; ctx.fillStyle = '#64748b'; ctx.fillText('DAYS CONQUERED', 140, lineY[2]);
                 ctx.fillStyle = scoreColor; ctx.textAlign = 'right'; ctx.fillText(completedCount + ' / 75', 940, lineY[2]);
 
+                // Footer Branding
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 30px Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Custom 75 Tracker', 540, 1800);
 
                 // Convert Canvas to a real file
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], '75Hard_Transformation.jpg', { type: 'image/jpeg' });
                     
-                    // Detect if the device is an Apple/iOS device
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-                    if (isIOS) {
+                    // NEW: Allow BOTH iOS and Android to use the native share sheet!
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
-                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                await navigator.share({
-                                    files: [file],
-                                    title: 'My 75 Hard Transformation',
-                                    text: 'I just conquered the 75 Hard Challenge!'
-                                });
-                            } else {
-                                alert("To save this photo, long-press the image and select 'Save to Photos'.");
-                            }
+                            await navigator.share({
+                                files: [file],
+                                title: 'My 75 Hard Transformation',
+                                text: 'I just conquered the challenge!'
+                            });
                         } catch (err) {
                             console.log("Share cancelled by user or blocked:", err);
                         }
                     } else {
-                        // Fallback: Force Download for older devices & Android
+                        // Fallback: Force Download ONLY if sharing is completely unsupported (like on an old PC)
                         const a = document.createElement('a');
                         a.href = URL.createObjectURL(blob);
                         a.download = '75Hard_Transformation.jpg';
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
+                        alert("Image downloaded! Open Instagram or Facebook to share.");
                     }
                     btn.innerHTML = originalText;
                 }, 'image/jpeg', 0.9);
@@ -756,41 +756,40 @@
             }
         }
 
-        // --- PHOTO DOWNLOAD FUNCTION (STRICT OS SPLIT) ---
+        // --- PHOTO DOWNLOAD FUNCTION (FOR INDIVIDUAL PHOTOS) ---
         async function downloadPhoto(dayNumber) {
             const dataUrl = window.photoCache[dayNumber];
             if (!dataUrl) return;
 
-            // Detect if the device is an Apple/iOS device
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            try {
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                const file = new File([blob], `75Hard_Day${dayNumber}_Progress.jpg`, { type: 'image/jpeg' });
 
-            if (isIOS) {
-                // STRCITLY iOS: Open the Native Share Sheet
-                try {
-                    const response = await fetch(dataUrl);
-                    const blob = await response.blob();
-                    const file = new File([blob], `75Hard_Day${dayNumber}_Progress.jpg`, { type: 'image/jpeg' });
-
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: '75 Hard Progress',
-                            text: `Day ${dayNumber} photo!`
-                        });
-                    } else {
-                        alert("To save this photo, long-press the image and select 'Save to Photos'.");
-                    }
-                } catch (err) {
-                    console.log("Share API error or cancelled:", err);
+                // Try Share Sheet first (Both iOS and Android)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: '75 Hard Progress',
+                        text: `Day ${dayNumber} photo!`
+                    });
+                    return; // Stop here if native share works
                 }
-            } else {
-                // STRICTLY ANDROID/PC: Force direct download popup
-                const a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = `75Hard_Day${dayNumber}_Progress.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            } catch (err) {
+                console.log("Share API error or cancelled:", err);
+            }
+
+            // Fallback for browsers that don't support file sharing
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `75Hard_Day${dayNumber}_Progress.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                 setTimeout(() => alert("To save this photo to your gallery, long-press the image and select 'Save to Photos'."), 500);
             }
         }
 
