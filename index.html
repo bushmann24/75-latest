@@ -553,7 +553,7 @@
 
                         <button id="shareSocialBtn" onclick="shareVictoryToStory()" class="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-500/30 transition active:scale-95 flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-                            Share to IG / FB Story
+                            Share to Socials
                         </button>
                         
                     </div>
@@ -561,6 +561,27 @@
                     <button onclick="fireVictoryConfetti()" class="text-yellow-600 hover:bg-yellow-50 text-[10px] font-black uppercase tracking-[0.1em] transition border border-yellow-200 bg-yellow-50/50 px-6 py-3 rounded-xl mb-12 shadow-sm">Celebrate Again</button>
                 </div>
             `;
+        }
+
+        // --- HELPER FOR CANVAS DRAWING ---
+        function createRoundRectPath(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function fillRoundRect(ctx, x, y, w, h, r, fillStyle, strokeStyle, lineWidth) {
+            createRoundRectPath(ctx, x, y, w, h, r);
+            if (fillStyle) { ctx.fillStyle = fillStyle; ctx.fill(); }
+            if (strokeStyle) { ctx.lineWidth = lineWidth; ctx.strokeStyle = strokeStyle; ctx.stroke(); }
         }
 
         // --- CUSTOM SOCIAL MEDIA STORY GENERATOR ---
@@ -587,34 +608,26 @@
                     new Promise(r => { img2.onload = r; img2.src = photoDay75; })
                 ]);
 
-                // Create a 1080x1080 canvas (Perfect for both IG Story and IG Feed)
+                // Create a 1080x1440 canvas (Classic Portrait layout, matches UI beautifully)
                 const canvas = document.createElement('canvas');
                 canvas.width = 1080;
-                canvas.height = 1080;
+                canvas.height = 1440;
                 const ctx = canvas.getContext('2d');
 
-                // Draw Dark Background
-                ctx.fillStyle = '#0f172a'; // slate-950
-                ctx.fillRect(0, 0, 1080, 1080);
+                // 1. Draw Background (Match app background - clean white/slate-50)
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, 1440);
+                bgGrad.addColorStop(0, '#fefce8'); // Subtle yellow tint at very top
+                bgGrad.addColorStop(0.3, '#ffffff');
+                bgGrad.addColorStop(1, '#ffffff'); 
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, 1080, 1440);
 
-                // Draw Title
-                ctx.fillStyle = '#eab308'; // yellow-500
-                ctx.font = 'italic 900 70px Arial, sans-serif'; 
-                ctx.textAlign = 'center';
-                ctx.fillText('75 HARD COMPLETED', 540, 120);
+                // Calculate Stats
+                const isPerfect = state.completedDays.length === 75;
+                const vTitle = isPerfect ? "VICTORY" : "FINISHED";
+                const vSubtitle = isPerfect ? "75 Days of Unbreakable Discipline." : "You pushed through to the end. Be proud.";
+                const scoreColor = isPerfect ? "#16a34a" : "#ca8a04";
 
-                // Draw Before/After Images
-                ctx.drawImage(img1, 50, 180, 465, 465);
-                ctx.drawImage(img2, 565, 180, 465, 465);
-
-                // Draw Image Labels
-                ctx.fillStyle = '#94a3b8'; // slate-400
-                ctx.font = '900 40px Arial, sans-serif';
-                ctx.fillText('DAY 1', 282, 700);
-                ctx.fillStyle = '#3b82f6'; // blue-500
-                ctx.fillText('DAY 75', 797, 700);
-
-                // Calculate final stats
                 let totalWater = 0; let totalMeals = 0;
                 for (let d in state.metrics) {
                     if (state.metrics[d].waterLogs) totalWater += state.metrics[d].waterLogs.reduce((a, b) => a + b, 0);
@@ -623,40 +636,115 @@
                 const totalLiters = (totalWater / 1000).toFixed(1);
                 const completedCount = state.completedDays.length;
 
-                // Draw Stats
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 35px Arial, sans-serif';
-                ctx.fillText(`💧 ${totalLiters}L Water   |   🥗 ${totalMeals} Meals   |   🏆 ${completedCount}/75 Days`, 540, 850);
+                // 2. Draw Title Text (Matches UI exactly)
+                const textGrad = ctx.createLinearGradient(0, 80, 0, 180);
+                textGrad.addColorStop(0, '#facc15'); // yellow-400
+                textGrad.addColorStop(1, '#ca8a04'); // yellow-600
+                ctx.fillStyle = textGrad;
+                ctx.font = 'italic 900 110px Arial, sans-serif'; 
+                ctx.textAlign = 'center';
+                ctx.fillText(vTitle, 540, 160);
+
+                ctx.fillStyle = '#1e293b'; // slate-800
+                ctx.font = 'bold 34px Arial, sans-serif';
+                ctx.fillText(vSubtitle, 540, 230);
+
+                // 3. Draw Comparison Card (Glass match)
+                // Card Background
+                fillRoundRect(ctx, 80, 300, 920, 560, 40, '#f8fafc', '#e2e8f0', 4);
                 
-                // Draw Footer Subtext
-                ctx.fillStyle = '#64748b'; // slate-500
-                ctx.font = '25px Arial, sans-serif';
-                ctx.fillText('My Transformation Journey', 540, 950);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '900 38px Arial, sans-serif';
+                ctx.fillText('DAY 1 VS DAY 75', 540, 380);
+
+                ctx.font = 'bold 24px Arial, sans-serif';
+                ctx.fillStyle = '#64748b'; ctx.fillText('STARTED', 300, 440);
+                ctx.fillStyle = '#2563eb'; ctx.fillText('FINISHED', 780, 440);
+
+                // Image 1 Frame & Clip
+                fillRoundRect(ctx, 100, 470, 400, 400, 24, '#ffffff', '#cbd5e1', 4);
+                ctx.save();
+                createRoundRectPath(ctx, 100, 470, 400, 400, 24);
+                ctx.clip();
+                ctx.drawImage(img1, 100, 470, 400, 400);
+                ctx.restore();
+
+                // Image 2 Frame & Clip
+                fillRoundRect(ctx, 580, 470, 400, 400, 24, '#ffffff', '#3b82f6', 8);
+                ctx.save();
+                createRoundRectPath(ctx, 580, 470, 400, 400, 24);
+                ctx.clip();
+                ctx.drawImage(img2, 580, 470, 400, 400);
+                ctx.restore();
+
+                // 4. Draw Stats Card (Glass match)
+                ctx.save();
+                // Base border and background
+                fillRoundRect(ctx, 80, 920, 920, 440, 40, '#ffffff', 'rgba(250, 204, 21, 0.5)', 6); 
+                
+                // Draw yellow top strip overlay
+                createRoundRectPath(ctx, 80, 920, 920, 440, 40);
+                ctx.clip();
+                const topBarGrad = ctx.createLinearGradient(80, 920, 1000, 920);
+                topBarGrad.addColorStop(0, '#fde047');
+                topBarGrad.addColorStop(0.5, '#eab308');
+                topBarGrad.addColorStop(1, '#fde047');
+                ctx.fillStyle = topBarGrad;
+                ctx.fillRect(80, 920, 920, 16);
+                ctx.restore();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '900 44px Arial, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText((state.name ? state.name + "'s" : "Your") + ' Final Stats', 140, 1020);
+
+                const lineY = [1120, 1220, 1320];
+
+                // Water Stat
+                ctx.font = 'bold 30px Arial, sans-serif';
+                ctx.fillStyle = '#64748b'; ctx.fillText('WATER DRANK', 140, lineY[0]);
+                ctx.fillStyle = '#2563eb'; ctx.textAlign = 'right'; ctx.fillText(totalLiters + ' Liters', 940, lineY[0]);
+                ctx.fillStyle = '#fef08a'; ctx.fillRect(140, lineY[0]+30, 800, 2); // Yellow divider
+
+                // Meals Stat
+                ctx.textAlign = 'left'; ctx.fillStyle = '#64748b'; ctx.fillText('MEALS TRACKED', 140, lineY[1]);
+                ctx.fillStyle = '#ea580c'; ctx.textAlign = 'right'; ctx.fillText(totalMeals, 940, lineY[1]);
+                ctx.fillStyle = '#fef08a'; ctx.fillRect(140, lineY[1]+30, 800, 2); // Yellow divider
+
+                // Days Stat
+                ctx.textAlign = 'left'; ctx.fillStyle = '#64748b'; ctx.fillText('DAYS CONQUERED', 140, lineY[2]);
+                ctx.fillStyle = scoreColor; ctx.textAlign = 'right'; ctx.fillText(completedCount + ' / 75', 940, lineY[2]);
+
 
                 // Convert Canvas to a real file
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], '75Hard_Transformation.jpg', { type: 'image/jpeg' });
                     
-                    // Trigger Native Share Sheet (iOS / Modern Android)
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    // Detect if the device is an Apple/iOS device
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+                    if (isIOS) {
                         try {
-                            await navigator.share({
-                                files: [file],
-                                title: 'My 75 Hard Transformation',
-                                text: 'I just conquered the 75 Hard Challenge!'
-                            });
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'My 75 Hard Transformation',
+                                    text: 'I just conquered the 75 Hard Challenge!'
+                                });
+                            } else {
+                                alert("To save this photo, long-press the image and select 'Save to Photos'.");
+                            }
                         } catch (err) {
                             console.log("Share cancelled by user or blocked:", err);
                         }
                     } else {
-                        // Fallback: Force Download for older devices
+                        // Fallback: Force Download for older devices & Android
                         const a = document.createElement('a');
                         a.href = URL.createObjectURL(blob);
                         a.download = '75Hard_Transformation.jpg';
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        alert("Transformation image saved to your device! You can now open Instagram or Facebook to share it.");
                     }
                     btn.innerHTML = originalText;
                 }, 'image/jpeg', 0.9);
