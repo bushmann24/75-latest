@@ -536,7 +536,7 @@
                         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300"></div>
                         <h2 class="text-xl font-black text-slate-900 uppercase tracking-wider mb-8">${state.name ? state.name + "'s" : "Your"} Final Stats</h2>
 
-                        <div class="space-y-5 text-left">
+                        <div class="space-y-5 text-left mb-8">
                             <div class="flex justify-between items-center border-b border-yellow-200 pb-3">
                                 <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Water Drank</span>
                                 <span class="text-lg font-black text-blue-600">${totalLiters} Liters</span>
@@ -551,12 +551,121 @@
                             </div>
                         </div>
 
-                        <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">Screenshot to share your victory!</p>
+                        <button id="shareSocialBtn" onclick="shareVictoryToStory()" class="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-500/30 transition active:scale-95 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                            Share to IG / FB Story
+                        </button>
+                        
                     </div>
 
                     <button onclick="fireVictoryConfetti()" class="text-yellow-600 hover:bg-yellow-50 text-[10px] font-black uppercase tracking-[0.1em] transition border border-yellow-200 bg-yellow-50/50 px-6 py-3 rounded-xl mb-12 shadow-sm">Celebrate Again</button>
                 </div>
             `;
+        }
+
+        // --- CUSTOM SOCIAL MEDIA STORY GENERATOR ---
+        async function shareVictoryToStory() {
+            const btn = document.getElementById('shareSocialBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Generating Image... ⏳";
+
+            try {
+                const photoDay1 = window.photoCache[1];
+                const photoDay75 = window.photoCache[75];
+
+                if (!photoDay1 || !photoDay75) {
+                    alert("You need both a Day 1 and Day 75 photo saved in the app to generate a transformation image!");
+                    btn.innerHTML = originalText;
+                    return;
+                }
+
+                // Load images into memory
+                const img1 = new Image();
+                const img2 = new Image();
+                await Promise.all([
+                    new Promise(r => { img1.onload = r; img1.src = photoDay1; }),
+                    new Promise(r => { img2.onload = r; img2.src = photoDay75; })
+                ]);
+
+                // Create a 1080x1080 canvas (Perfect for both IG Story and IG Feed)
+                const canvas = document.createElement('canvas');
+                canvas.width = 1080;
+                canvas.height = 1080;
+                const ctx = canvas.getContext('2d');
+
+                // Draw Dark Background
+                ctx.fillStyle = '#0f172a'; // slate-950
+                ctx.fillRect(0, 0, 1080, 1080);
+
+                // Draw Title
+                ctx.fillStyle = '#eab308'; // yellow-500
+                ctx.font = 'italic 900 70px Arial, sans-serif'; 
+                ctx.textAlign = 'center';
+                ctx.fillText('75 HARD COMPLETED', 540, 120);
+
+                // Draw Before/After Images
+                ctx.drawImage(img1, 50, 180, 465, 465);
+                ctx.drawImage(img2, 565, 180, 465, 465);
+
+                // Draw Image Labels
+                ctx.fillStyle = '#94a3b8'; // slate-400
+                ctx.font = '900 40px Arial, sans-serif';
+                ctx.fillText('DAY 1', 282, 700);
+                ctx.fillStyle = '#3b82f6'; // blue-500
+                ctx.fillText('DAY 75', 797, 700);
+
+                // Calculate final stats
+                let totalWater = 0; let totalMeals = 0;
+                for (let d in state.metrics) {
+                    if (state.metrics[d].waterLogs) totalWater += state.metrics[d].waterLogs.reduce((a, b) => a + b, 0);
+                    if (state.metrics[d].food) totalMeals += state.metrics[d].food.length;
+                }
+                const totalLiters = (totalWater / 1000).toFixed(1);
+                const completedCount = state.completedDays.length;
+
+                // Draw Stats
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 35px Arial, sans-serif';
+                ctx.fillText(`💧 ${totalLiters}L Water   |   🥗 ${totalMeals} Meals   |   🏆 ${completedCount}/75 Days`, 540, 850);
+                
+                // Draw Footer Subtext
+                ctx.fillStyle = '#64748b'; // slate-500
+                ctx.font = '25px Arial, sans-serif';
+                ctx.fillText('My Transformation Journey', 540, 950);
+
+                // Convert Canvas to a real file
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], '75Hard_Transformation.jpg', { type: 'image/jpeg' });
+                    
+                    // Trigger Native Share Sheet (iOS / Modern Android)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'My 75 Hard Transformation',
+                                text: 'I just conquered the 75 Hard Challenge!'
+                            });
+                        } catch (err) {
+                            console.log("Share cancelled by user or blocked:", err);
+                        }
+                    } else {
+                        // Fallback: Force Download for older devices
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = '75Hard_Transformation.jpg';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        alert("Transformation image saved to your device! You can now open Instagram or Facebook to share it.");
+                    }
+                    btn.innerHTML = originalText;
+                }, 'image/jpeg', 0.9);
+
+            } catch (error) {
+                console.error(error);
+                alert("Something went wrong generating the shareable image.");
+                btn.innerHTML = originalText;
+            }
         }
 
         // --- PHOTO DOWNLOAD FUNCTION (STRICT OS SPLIT) ---
